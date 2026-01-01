@@ -1,0 +1,50 @@
+# Direction A: End-to-End Transformer with Mechanistic Interpretability
+
+model:
+  type: ChessTransformer
+  params:
+    vocab_size: 1024
+    hidden_dim: 512
+    num_layers: 12
+    num_heads: 8
+    ffn_dim: 2048
+    max_seq_len: 128
+    dropout: 0.1
+    use_piece_embeddings: true
+
+data:
+  train_path: data/stockfish_annotations/train.h5
+  val_path: data/stockfish_annotations/val.h5
+  encoding_type: piece_centric
+  batch_size: 256
+  num_workers: 4
+  max_train_samples: null  # Use all
+  max_val_samples: null
+
+training:
+  num_epochs: 50
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  warmup_steps: 1000
+  optimizer: AdamW
+  scheduler: cosine
+
+  loss:
+    policy_weight: 0.5
+    value_weight: 0.5
+    value_loss_type: mse
+
+  save_every: 5
+  validate_every: 1
+  checkpoint_dir: checkpoints/direction_a
+
+wandb:
+  enabled: true
+  project: minimal-chess-models
+  run_name: transformer-50M
+
+interpretability:
+  enabled: true
+  probe_every: 10  # Run probes every N epochs
+  prune_after_epoch: 40  # Start pruning after epoch 40
+  target_params: 20000000  # Target 20M params after pruning

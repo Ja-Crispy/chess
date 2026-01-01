@@ -1,0 +1,48 @@
+# Direction C: MoE with Position-Type Routing
+
+model:
+  type: ChessMoE
+  params:
+    hidden_dim: 256
+    num_trunk_layers: 4
+    num_experts: 8
+    ffn_dim: 512
+    top_k: 2
+    num_heads: 8
+    max_seq_len: 64
+    dropout: 0.1
+
+data:
+  train_path: data/stockfish_annotations/train.h5
+  val_path: data/stockfish_annotations/val.h5
+  encoding_type: piece_centric
+  batch_size: 256
+  num_workers: 4
+
+training:
+  num_epochs: 50
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  warmup_steps: 1000
+  optimizer: AdamW
+  scheduler: cosine
+
+  loss:
+    type: MoELoss
+    policy_weight: 0.5
+    value_weight: 0.5
+    balance_weight: 0.01  # Load balancing
+    value_loss_type: mse
+
+  save_every: 5
+  validate_every: 1
+  checkpoint_dir: checkpoints/direction_c
+
+wandb:
+  enabled: true
+  project: minimal-chess-models
+  run_name: moe-8experts-25M
+
+analysis:
+  analyze_experts: true
+  analysis_every: 10  # Analyze expert specialization every N epochs
